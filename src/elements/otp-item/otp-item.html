@@ -1,0 +1,74 @@
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../otp-generator/otp-generator.html">
+
+<dom-module id="otp-item">
+  <style>
+    paper-item {
+      height: 64px;
+    }
+    .token {
+      font-size: 1.8em;
+      font-weight: bold;
+    }
+    div[secondary] {
+      color: gray;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  </style>
+  <template>
+    <iron-meta id="meta" type="otp"></iron-meta>
+    <paper-item>
+      <paper-item-body two-line class="flex">
+        <div class="token">[[token]]</div>
+        <div secondary>[[name]]</div>
+      </paper-item-body>
+      <div>{{remaining}}</div>
+      <paper-icon-button icon="delete" on-tap="onRemove"></paper-icon-button>
+    </paper-item>
+  </template>
+  <script>
+  Polymer({
+    is: 'otp-item',
+    properties: {
+      otpId: Number,
+      name: {
+        type: String,
+        value: ''
+      },
+      issuer: {
+        type: String,
+        value: ''
+      },
+      gen: {
+        type: Object,
+        value: {}
+      }
+    },
+    ready: function() {
+      var that = this;
+      this.gen = this.$.meta.byKey('otp');
+      this.generate();
+      this.gen.addEventListener('timer', function(e) {
+        that.remaining = e.detail.remaining;
+        if (that.remaining % 30 == 0) that.generate();
+      });
+    },
+    generate: function() {
+      var that = this;
+      this.gen.getTOTP(this.otpId).then(function(token) {
+        that.token = token;
+      }, function(err) {
+        console.error(err);
+      });
+    },
+    onRemove: function(e) {
+      this.fire('remove');
+    }
+  });
+  </script>
+</dom-module>

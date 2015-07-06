@@ -1,0 +1,203 @@
+<!-- Iron elements -->
+<link rel="import" href="../../bower_components/iron-flex-layout/classes/iron-flex-layout.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/iron-selector/iron-selector.html">
+
+<!-- Paper elements -->
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-styles/paper-styles-classes.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../bower_components/paper-toolbar/paper-toolbar.html">
+<link rel="import" href="../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+
+<!-- Platinum elements -->
+<!-- <link rel="import" href="../bower_components/platinum-sw/platinum-sw-cache.html">
+<link rel="import" href="../bower_components/platinum-sw/platinum-sw-register.html">
+ -->
+<!-- Add your elements here -->
+<!-- <link rel="import" href="../styles/app-theme.html">
+<link rel="import" href="my-greeting/my-greeting.html">
+<link rel="import" href="my-list/my-list.html">
+ -->
+<!-- Configure your routes here -->
+<!-- <link rel="import" href="routing.html"> -->
+
+<link rel="import" href="../otp-item/otp-item.html">
+<link rel="import" href="../qr-code/qr-code.html">
+
+<dom-module id="otp-app">
+  <template>
+    <otp-generator id="otp"></otp-generator>
+
+    <iron-pages class="content" selected="{{page}}">
+      <paper-drawer-panel id="paperDrawerPanel">
+        <paper-header-panel main mode="waterfall-tall">
+
+          <!-- Main Toolbar -->
+          <paper-toolbar id="mainToolbar">
+            <!-- Application name -->
+            <div class="middle paper-font-display2 app-name">OTP Generator</div>
+
+            <!-- Application sub title -->
+            <div class="bottom title"></div>
+
+          </paper-toolbar>
+
+          <!-- Main Content -->
+          <section>
+            <template id="otps" is="dom-repeat" items="{{storage}}">
+              <otp-item otp-id="[[item.id]]" name="[[item.name]]" issuer="[[item.issuer]]" on-remove="onRemove"></otp-item>
+            </template>
+            <paper-dialog id="dialog">
+              <div>
+                <paper-input id="name" placeholder="Name"></paper-input>
+                <paper-input id="secret" type="password" placeholder="Key"></paper-input>
+                <paper-input id="issuer" hidden></paper-input>
+              </div>
+              <div class="buttons">
+                <paper-button raised on-tap="onCancel">Cancel</paper-button>
+                <paper-button raised on-tap="openQRCode">QRCode</paper-button>
+                <paper-button raised on-tap="onSave">Save</paper-button>
+              </div>
+            </paper-dialog>
+            <paper-fab on-click="openDialog" icon="add"></paper-fab>
+          </section>
+        </paper-header-panel>
+      </paper-drawer-panel>
+      <section>
+        <iron-icon on-tap="closeQRCode" icon="close"></iron-icon>
+        <qr-code on-qrcode-detected="onQRCodeDetected" id="qrcode"></qr-code>
+      </section>
+    </iron-pages>
+
+    <paper-toast id="toast"></paper-toast>
+
+<!--     <platinum-sw-register auto-register
+                          clients-claim
+                          skip-waiting
+                          on-service-worker-installed="displayInstalledToast">
+      <platinum-sw-cache default-cache-strategy="networkFirst"
+                         precache-file="precache.json">
+      </platinum-sw-cache>
+    </platinum-sw-register>
+ -->
+  </template>
+  <script>
+    Polymer({
+      is: 'otp-app',
+      properties: {
+        storage: {
+          type: Array,
+          value: []
+        },
+        page: {
+          type: Number,
+          value: 0
+        }
+      },
+      openDialog: function(e) {
+        e.stopPropagation();
+        this.$.name.value = '';
+        this.$.secret.value = '';
+        this.$.dialog.open();
+        this.$.name.focus();
+      },
+      openQRCode: function(e) {
+        e.stopPropagation();
+        this.page = 1;
+        this.$.qrcode.active = true;
+      },
+      closeQRCode: function(e) {
+        e.stopPropagation();
+        this.page = 0;
+        this.$.qrcode.active = false;
+      },
+      onQRCodeDetected: function(e) {
+        var secret = issuer = name = '';
+        e.stopPropagation();
+        this.closeQRCode(e);
+
+        var qrcode = e.detail.code;
+        var matches = qrcode.match(/^otpauth:\/\/totp\/(.*?)\?(.*)$/);
+        if (!matches) {
+          this.openDialog(e);
+          this.showToast('Invalid key.');
+        } else {
+          name = decodeURIComponent(matches[1]);
+          var queries = matches[2].split('&');
+          for (var i = 0; i < queries.length; i++) {
+            var keyVal = queries[i].split('=');
+            switch (keyVal[0]) {
+              case 'secret':
+                secret = decodeURIComponent(keyVal[1]);
+                break;
+              case 'issuer':
+                issuer = decodeURIComponent(keyVal[1]);
+                break;
+              default:
+                break;
+            }
+          }
+          this.openDialog(e);
+          this.$.secret.value = secret;
+          this.$.name.value   = name;
+          this.$.issuer.value = issuer;
+          this.showToast('Key obtained.');
+        }
+      },
+      onSave: function(e) {
+        var that    = this,
+            id      = (new Date()).getTime(),
+            name    = this.$.name.value,
+            key     = this.$.secret.value,
+            issuer  = this.$.issuer.value;
+
+        if (name.length > 0 && key.length > 0) {
+          this.$.otp.importKey(id, name, key, issuer).then(function() {
+            that.push('storage', {id: id, name: name, issuer: issuer});
+            that.showToast('OTP added.');
+            that.$.dialog.close();
+          }, function(error) {
+            that.showToast(error);
+          });
+        } else {
+          this.showToast('Name and Key are required.');
+        }
+      },
+      onRemove: function(e) {
+        var that = this;
+        this.$.otp.remove(e.target.otpId).then(function() {
+          that.splice('storage', e.model.index, 1);
+          that.showToast('OTP removed.');
+        }, function(error) {
+          that.showToast('OTP removal failed.');
+        });
+      },
+      onCancel: function(e) {
+        e.stopPropagation();
+        this.$.dialog.close();
+      },
+      showToast: function(msg) {
+        this.$.toast.text = msg;
+        this.$.toast.show();
+      },
+      ready: function() {
+        var that = this;
+        this.$.otp.getOTPList().then(function(result) {
+          that.storage = result;
+        }, function(error) {
+          that.showToast(error);
+        })
+      }
+    })
+  </script>
+</dom-module>

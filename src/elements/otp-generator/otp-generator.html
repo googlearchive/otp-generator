@@ -1,0 +1,111 @@
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../bower_components/idb-node/idb-node.html">
+<script src="base32decode.js"></script>
+
+<dom-module id="otp-generator">
+  <template>
+    <idb-node id="db" database-name="OTP" version="1" object-store="cryptokeys" key-path="id"></idb-node>
+  </template>
+  <script>
+  var OTP_LENGTH = 6;
+
+  Polymer({
+    is: 'otp-generator',
+    properties: {
+      otp: {
+        type: Object,
+        value: {}
+      },
+      remaining: {
+        type: Number,
+        value: 0
+      },
+      isReady: {
+        type: Object,
+        value: null
+      }
+    },
+    ready: function() {
+      var that = this;
+      new Polymer.IronMeta({type: 'otp', key: 'otp', value: this});
+      this.timer = setInterval(function() {
+        var rest = 60 - (new Date()).getSeconds();
+        that.fire('timer', {remaining: rest});
+      }, 1000);
+    },
+    getOTPList: function() {
+      return this.$.db.getAll();
+    },
+    getHOTP: function(id, counter) {
+      var that = this;
+      return that.$.db.get(id).then(function(entry) {
+        var data = [];
+        for (var i = 0; i < 8; i++) {
+          data[7 - i] = counter & 255;
+          counter = counter >> 8;
+        }
+        var view = new Uint8Array(data);
+
+        return crypto.subtle.sign({
+          name: 'HMAC'
+        }, entry.key, view.buffer)
+      }).then(function(sig) {
+        var signature = new Uint8Array(sig);
+        var offset = signature[19] & 0xf;
+
+        // calculate bin_code (RFC4226 5.4)
+        var bin_code = (signature[offset]   & 0x7f) << 24
+                      |(signature[offset+1] & 0xff) << 16
+                      |(signature[offset+2] & 0xff) << 8
+                      |(signature[offset+3] & 0xff);
+
+        bin_code = bin_code.toString();
+        var sub_start = bin_code.length - OTP_LENGTH;
+        var code = bin_code.substr(sub_start, OTP_LENGTH);
+
+        return code;
+      });
+    },
+    getTOTP: function(id) {
+      var time = parseInt(Date.now()/1000);
+      var counter = Math.floor(time/ 30);
+      return this.getHOTP(id, counter);
+    },
+    importKey: function(id, name, key, issuer) {
+      var that = this;
+      if (id == undefined || key == undefined) {
+        throw 'id or key is undefined';
+      } else {
+        key = Base32Decode(key);
+        return crypto.subtle.importKey('raw', key.buffer, {
+          name: 'HMAC',
+          hash: {
+            name: 'SHA-1'
+          }
+        }, false, ['sign', 'verify']).then(function(cryptoKey) {
+          that.$.db.put({
+            id: id,
+            name: name,
+            key: cryptoKey,
+            issuer: issuer
+          }).then(function() {
+            return true;
+          }, function(error) {
+            throw error;
+          });
+        }, function(error) {
+          throw error;
+        });
+      }
+    },
+    remove: function(id) {
+      if (!id) throw 'id not specified';
+      return this.$.db.delete(id).then(function(e) {
+        return true;
+      }, function(error) {
+        throw error;
+      });
+    }
+  });
+  </script>
+</dom-module>
