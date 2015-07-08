@@ -16,6 +16,6 @@
     "iron-elements": "PolymerElements/iron-elements#1.0.0",
     "paper-elements": "PolymerElements/paper-elements#~1.0.1",
     "page": "visionmedia/page.js#~1.6.3",
-    "idb-node": "~0.4.0"
+    "idb-node": "*"
   }
 }
