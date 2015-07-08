@@ -1,9 +1,13 @@
 {
   "name": "otp-generator",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "private": true,
   "engines": {
     "node": ">=0.10.0"
+  },
+  "authors": {
+    "Eiji Kitamura <agektmr@google.com>",
+    "Mat Scales <mscales@google.com>"
   },
   "devDependencies": {
     "babelify": "^6.0.2",
@@ -29,7 +33,5 @@
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.1.1"
   },
-  "dependencies": {
-    "speakeasy": "^1.0.3"
-  }
+  "dependencies": {}
 }
