@@ -1,8 +1,6 @@
 # OTP Generator
 
-A sample web app that lets you generate OTPs. It uses ES6 classes (via Babel) and [Polymer 1.0](https://www.polymer-project.org/1.0/).
-
-[See the site here](https://otp-generator.appspot.com/)
+A sample web app that lets you generate OTPs.
 
 ## License
 
