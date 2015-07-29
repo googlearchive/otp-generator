@@ -34,6 +34,14 @@ var PATHS = {
     src: ['bower.json'],
     dest: 'dist/bower_components'
   },
+  sw: {
+    src: ['dist/bower_components/platinum-sw/bootstrap/*.js'],
+    dest: 'dist/elements/bootstrap'
+  },
+  'sw-toolbox': {
+    src: ['dist/bower_components/sw-toolbox/*.js'],
+    dest: 'dist/sw-toolbox'
+  },
   static: {
     src: ['src/*.*'],
     dest: 'dist'
@@ -65,9 +73,37 @@ gulp.task('clean:third_party', function(done) {
   del(PATHS.third_party.dest, done);
 });
 
+gulp.task('clean:post-build', function(done) {
+  del([
+    'dist/bower_components/**/',
+    'dist/bower_components/**/*.*',
+    '!dist/bower_components/',
+    '!dist/bower_components/platinum-sw/',
+    '!dist/bower_components/platinum-sw/service-worker.js',
+    '!dist/bower_components/polymer/',
+    '!dist/bower_components/polymer/polymer*.html',
+    '!dist/bower_components/webcomponentsjs/',
+    '!dist/bower_components/webcomponentsjs/webcomponents-lite.min.js',
+    'dist/elements/**/',
+    'dist/elements/**/*.*',
+    '!dist/elements/bootstrap/',
+    '!dist/elements/bootstrap/sw-toolbox-setup.js',
+    '!dist/elements/',
+    '!dist/elements/elements.html'
+  ], {dot: true}, done);
+});
+
 /** Copy */
 gulp.task('bower', function() {
   return bower({ cmd: 'update'});
+});
+
+gulp.task('sw', function() {
+  return gulp.src(PATHS.sw.src).pipe(gulp.dest(PATHS.sw.dest));
+});
+
+gulp.task('sw-toolbox', function() {
+  return gulp.src(PATHS['sw-toolbox'].src).pipe(gulp.dest(PATHS['sw-toolbox'].dest));
 });
 
 gulp.task('elements', function() {
@@ -111,9 +147,11 @@ gulp.task('watch', function() {
   gulp.watch(PATHS.third_party.src, ['third_party']);
   gulp.watch(PATHS.bower.src, ['bower']);
   gulp.watch(PATHS.styles.src, ['styles']);
-  gulp.watch([PATHS.elements.dest, PATHS.bower.dest], ['vulcanize']);
+  gulp.watch(['dist/elements/**/*', '!dist/elements/elements.html', 'dist/bower_components/**/*'], ['vulcanize']);
 });
 
-gulp.task('default', function() {
-  runSequence(['clean:elements', 'clean:third_party', 'clean:static'], ['third_party', 'static', 'elements', 'bower', 'styles'], 'vulcanize', 'watch');
+gulp.task('default', ['build', 'watch']);
+
+gulp.task('build', function() {
+  runSequence(['clean:elements', 'clean:third_party', 'clean:static'], ['third_party', 'static', 'elements', 'bower', 'styles'], 'sw', 'sw-toolbox', 'vulcanize');
 });

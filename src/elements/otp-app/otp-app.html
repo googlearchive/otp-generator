@@ -36,16 +36,8 @@ limitations under the License.
 <link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
 
 <!-- Platinum elements -->
-<!-- <link rel="import" href="../bower_components/platinum-sw/platinum-sw-cache.html">
-<link rel="import" href="../bower_components/platinum-sw/platinum-sw-register.html">
- -->
-<!-- Add your elements here -->
-<!-- <link rel="import" href="../styles/app-theme.html">
-<link rel="import" href="my-greeting/my-greeting.html">
-<link rel="import" href="my-list/my-list.html">
- -->
-<!-- Configure your routes here -->
-<!-- <link rel="import" href="routing.html"> -->
+<link rel="import" href="../../bower_components/platinum-sw/platinum-sw-cache.html">
+<link rel="import" href="../../bower_components/platinum-sw/platinum-sw-register.html">
 
 <link rel="import" href="../otp-item/otp-item.html">
 <link rel="import" href="../qr-code/qr-code.html">
@@ -96,16 +88,13 @@ limitations under the License.
     </iron-pages>
 
     <paper-toast id="toast"></paper-toast>
-
-<!--     <platinum-sw-register auto-register
-                          clients-claim
-                          skip-waiting
+    <platinum-sw-register auto-register base-uri="bower_components/platinum-sw/"
                           on-service-worker-installed="displayInstalledToast">
-      <platinum-sw-cache default-cache-strategy="networkFirst"
+      <platinum-sw-cache default-cache-strategy="fastest"
                          precache-file="precache.json">
       </platinum-sw-cache>
     </platinum-sw-register>
- -->
+
   </template>
   <script>
     Polymer({
