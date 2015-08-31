@@ -36,6 +36,10 @@ limitations under the License.
         type: Number,
         value: 0
       },
+      refreshInterval: {
+        type: Number,
+        value: 30
+      },
       isReady: {
         type: Object,
         value: null
@@ -45,8 +49,8 @@ limitations under the License.
       var that = this;
       new Polymer.IronMeta({type: 'otp', key: 'otp', value: this});
       this.timer = setInterval(function() {
-        var rest = 60 - (new Date()).getSeconds();
-        that.fire('timer', {remaining: rest});
+        var remaining = (60 - (new Date()).getSeconds()) % that.refreshInterval;
+        that.fire('timer', {remaining: remaining});
       }, 1000);
     },
     getOTPList: function() {
