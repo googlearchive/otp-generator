@@ -49,7 +49,9 @@ limitations under the License.
       var that = this;
       new Polymer.IronMeta({type: 'otp', key: 'otp', value: this});
       this.timer = setInterval(function() {
-        var remaining = (60 - (new Date()).getSeconds()) % that.refreshInterval;
+        var time = parseInt(Date.now()/1000);
+        var counter = Math.floor(time/ that.refreshInterval);
+        var remaining = ((counter+1) * that.refreshInterval) - time;
         that.fire('timer', {remaining: remaining});
       }, 1000);
     },
@@ -88,7 +90,7 @@ limitations under the License.
     },
     getTOTP: function(id) {
       var time = parseInt(Date.now()/1000);
-      var counter = Math.floor(time/ 30);
+      var counter = Math.floor(time/ this.refreshInterval);
       return this.getHOTP(id, counter);
     },
     importKey: function(id, name, key, issuer) {
