@@ -65,18 +65,6 @@ limitations under the License.
             <template id="otps" is="dom-repeat" items="{{storage}}">
               <otp-item otp-id="[[item.id]]" name="[[item.name]]" issuer="[[item.issuer]]" on-remove="onRemove"></otp-item>
             </template>
-            <paper-dialog id="dialog">
-              <div>
-                <paper-input id="name" placeholder="Name"></paper-input>
-                <paper-input id="secret" type="password" placeholder="Key"></paper-input>
-                <paper-input id="issuer" hidden></paper-input>
-              </div>
-              <div class="buttons">
-                <paper-button raised on-tap="onCancel">Cancel</paper-button>
-                <paper-button raised on-tap="openQRCode">QRCode</paper-button>
-                <paper-button raised on-tap="onSave">Save</paper-button>
-              </div>
-            </paper-dialog>
             <paper-fab on-click="openDialog" icon="add"></paper-fab>
           </section>
         </paper-header-panel>
@@ -87,6 +75,18 @@ limitations under the License.
       </section>
     </iron-pages>
 
+    <paper-dialog id="dialog">
+      <div>
+        <paper-input id="name" placeholder="Name"></paper-input>
+        <paper-input id="secret" type="password" placeholder="Key"></paper-input>
+        <paper-input id="issuer" hidden></paper-input>
+      </div>
+      <div class="buttons">
+        <paper-button raised on-tap="onCancel">Cancel</paper-button>
+        <paper-button raised on-tap="openQRCode">QRCode</paper-button>
+        <paper-button raised on-tap="onSave">Save</paper-button>
+      </div>
+    </paper-dialog>
     <paper-toast id="toast"></paper-toast>
     <platinum-sw-register auto-register base-uri="bower_components/platinum-sw/"
                           on-service-worker-installed="displayInstalledToast">
@@ -119,6 +119,7 @@ limitations under the License.
       openQRCode: function(e) {
         e.stopPropagation();
         this.page = 1;
+        this.$.dialog.close();
         this.$.qrcode.active = true;
       },
       closeQRCode: function(e) {

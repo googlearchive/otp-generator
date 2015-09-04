@@ -60,10 +60,7 @@ limitations under the License.
         type: String,
         value: ''
       },
-      gen: {
-        type: Object,
-        value: {}
-      }
+      remaining: Number
     },
     ready: function() {
       var that = this;
@@ -71,7 +68,7 @@ limitations under the License.
       this.generate();
       this.gen.addEventListener('timer', function(e) {
         that.remaining = e.detail.remaining;
-        if (that.remaining % 30 == 0) that.generate();
+        if (that.remaining === 0) that.generate();
       });
     },
     generate: function() {

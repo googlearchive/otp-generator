@@ -134,8 +134,7 @@ gulp.task('vulcanize', function() {
    .pipe(vulcanize({
      inlineScripts: true,
      inlineCss: true,
-     stripExcludes: false,
-     excludes: [path.resolve('./dist/bower_components/polymer/polymer.html')]
+     stripExcludes: false
    }))
    .pipe(gulp.dest('./dist/elements'));
 });
