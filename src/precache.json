@@ -1,8 +1,8 @@
 [
-  "bower_components/polymer/polymer-micro.html",
-  "bower_components/polymer/polymer-mini.html",
-  "bower_components/polymer/polymer.html",
-  "bower_components/webcomponentsjs/webcomponents-lite.min.js",
+  "elements/polymer/polymer-micro.html",
+  "elements/polymer/polymer-mini.html",
+  "elements/polymer/polymer.html",
+  "elements/webcomponentsjs/webcomponents-lite.min.js",
   "elements/elements.html",
   "favicon.ico",
   "index.html",
