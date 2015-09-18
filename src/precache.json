@@ -7,8 +7,6 @@
   "favicon.ico",
   "index.html",
   "manifest.json",
-  "precache.json",
-  "styles/app-core.css",
   "third_party/base32decode-javascript/Base32Decode.js",
   "third_party/jsqrcode/alignpat.js",
   "third_party/jsqrcode/bitmat.js",

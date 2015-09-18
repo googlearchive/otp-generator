@@ -1,1 +1,1 @@
-importScripts('bower_components/platinum-sw/service-worker.js');
+importScripts('elements/platinum-sw/service-worker.js');

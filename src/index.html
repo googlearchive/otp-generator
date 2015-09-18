@@ -49,14 +49,35 @@ limitations under the License.
   <!-- Tile icon for Win8 (144x144) -->
   <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
 
-  <link rel="stylesheet" href="styles/app-core.css">
+  <script>
+    var webComponentsSupported = ('registerElement' in document
+      && 'import' in document.createElement('link')
+      && 'content' in document.createElement('template'));
 
-  <script src="elements/webcomponentsjs/webcomponents-lite.min.js"></script>
+    if (!webComponentsSupported) {
+      var wcPoly = document.createElement('script');
+      wcPoly.src = 'elements/webcomponentsjs/webcomponents-lite.min.js';
+      wcPoly.onload = lazyLoadPolymerAndElements;
+      document.head.appendChild(wcPoly);
+    } else {
+      lazyLoadPolymerAndElements();
+    }
 
-  <link rel="import" href="elements/elements.html">
+    function lazyLoadPolymerAndElements () {
+      // Let's use Shadow DOM if we have it, because awesome.
+      window.Polymer = window.Polymer || {};
+      window.Polymer.dom = 'shadow';
 
-  <style>
-  {% include "dist/styles/app-core.css" %}
+      var elImport = document.createElement('link');
+      elImport.rel = 'import';
+      elImport.href = 'elements/elements.html';
+
+      document.head.appendChild(elImport);
+    }
+  </script>
+
+  <style is="custom-style">
+    @@include('dist/styles/app-core.css')
   </style>
 </head>
 
