@@ -16,7 +16,7 @@
  */
 
 var QRClient = function() {
- 	var worker = new Worker('/third_party/jsqrcode/qrworker.js');
+ 	var worker = new Worker('third_party/jsqrcode/qrworker.js');
  	var currentCallback;
 
  	this.decode = function(imageData, callback) {

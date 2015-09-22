@@ -1,0 +1,66 @@
+<!--
+@license
+Copyright 2015 Google Inc. All rights reserved.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-->
+<dom-module id="circle-timer">
+  <template>
+    <canvas id="canvas"></canvas>
+  </template>
+  <script>
+  Polymer({
+    is: 'circle-timer',
+    properties: {
+      start: Number,
+      end: Number,
+      color: {
+        type: String,
+        value: '#000000'
+      }
+    },
+
+    _animate: function() {
+      requestAnimationFrame(this._animate.bind(this));
+      // Draw the circle
+      var canvas = this.$.canvas;
+      var context = canvas.getContext('2d');
+      var centerX = canvas.width / 2;
+      var centerY = canvas.height / 2;
+      var thickness = 6;
+      var radius = (Math.min(canvas.width, canvas.height) - thickness) / 2;
+
+      canvas.width = canvas.width;
+
+      var now = Date.now();
+      var proportion = ((now - this.start) / (this.end - this.start));
+
+      var startAngle = 1.5 * Math.PI;
+      var endAngle = startAngle + (2 * Math.PI * proportion)
+
+      context.beginPath();
+      context.arc(centerX, centerY, radius, startAngle, endAngle, true);
+      context.strokeStyle = this.color;
+      context.lineWidth = thickness;
+      context.stroke();
+    },
+
+    ready: function() {
+      this.$.canvas.width = 40;
+      this.$.canvas.height = 40;
+      requestAnimationFrame(this._animate.bind(this));
+    }
+
+  });
+  </script>
+</dom-module>

@@ -18,6 +18,7 @@
 var gulp = require('gulp');
 var bower = require('gulp-bower');
 var del = require('del');
+var fileinclude = require('gulp-file-include');
 var license = require('gulp-license');
 var minifycss = require('gulp-minify-css');
 var path = require('path');
@@ -27,7 +28,7 @@ var vulcanize = require('gulp-vulcanize');
 
 var PATHS = {
   elements: {
-    src: ['src/elements/**/*'],
+    src: ['bower_components/*platinum-sw/service-worker.js', 'bower_components/*polymer/polymer*.html', 'bower_components/*webcomponentsjs/webcomponents-lite.min.js'],
     dest: 'dist/elements'
   },
   bower: {
@@ -35,15 +36,19 @@ var PATHS = {
     dest: 'dist/bower_components'
   },
   sw: {
-    src: ['dist/bower_components/platinum-sw/bootstrap/*.js'],
+    src: ['bower_components/platinum-sw/bootstrap/*.js'],
     dest: 'dist/elements/bootstrap'
   },
   'sw-toolbox': {
-    src: ['dist/bower_components/sw-toolbox/*.js'],
+    src: ['bower_components/sw-toolbox/*.js'],
     dest: 'dist/sw-toolbox'
   },
   static: {
-    src: ['src/*.*'],
+    src: ['src/*.*', '!src/index.html'],
+    dest: 'dist'
+  },
+  index: {
+    src: ['src/index.html'],
     dest: 'dist'
   },
   third_party: {
@@ -73,26 +78,6 @@ gulp.task('clean:third_party', function(done) {
   del(PATHS.third_party.dest, done);
 });
 
-gulp.task('clean:post-build', function(done) {
-  del([
-    'dist/bower_components/**/',
-    'dist/bower_components/**/*.*',
-    '!dist/bower_components/',
-    '!dist/bower_components/platinum-sw/',
-    '!dist/bower_components/platinum-sw/service-worker.js',
-    '!dist/bower_components/polymer/',
-    '!dist/bower_components/polymer/polymer*.html',
-    '!dist/bower_components/webcomponentsjs/',
-    '!dist/bower_components/webcomponentsjs/webcomponents-lite.min.js',
-    'dist/elements/**/',
-    'dist/elements/**/*.*',
-    '!dist/elements/bootstrap/',
-    '!dist/elements/bootstrap/sw-toolbox-setup.js',
-    '!dist/elements/',
-    '!dist/elements/elements.html'
-  ], {dot: true}, done);
-});
-
 /** Copy */
 gulp.task('bower', function() {
   return bower({ cmd: 'update'});
@@ -120,17 +105,23 @@ gulp.task('third_party', function() {
 
 /** Build */
 gulp.task('styles', function() {
- return gulp.src(PATHS.styles.src)
-     .pipe(sass())
-     .pipe(minifycss())
-     .pipe(license('Apache', {
-       organization: 'Google Inc. All rights reserved.'
-     }))
-     .pipe(gulp.dest(PATHS.styles.dest));
+  return gulp.src(PATHS.styles.src)
+    .pipe(sass())
+    .pipe(minifycss())
+    .pipe(gulp.dest(PATHS.styles.dest));
+});
+
+gulp.task('index', function() {
+  return gulp.src(PATHS.index.src)
+    .pipe(fileinclude({
+      prefix: '@@',
+      basepath: '@root'
+    }))
+    .pipe(gulp.dest(PATHS.index.dest));
 });
 
 gulp.task('vulcanize', function() {
- return gulp.src('./dist/elements/elements.html')
+ return gulp.src('./src/elements/elements.html')
    .pipe(vulcanize({
      inlineScripts: true,
      inlineCss: true,
@@ -145,12 +136,13 @@ gulp.task('watch', function() {
   gulp.watch(PATHS.static.src, ['static']);
   gulp.watch(PATHS.third_party.src, ['third_party']);
   gulp.watch(PATHS.bower.src, ['bower']);
+  gulp.watch(PATHS.index.src, ['index']);
   gulp.watch(PATHS.styles.src, ['styles']);
-  gulp.watch(['dist/elements/**/*', '!dist/elements/elements.html', 'dist/bower_components/**/*'], ['vulcanize']);
+  gulp.watch(['src/elements/**/*', '!dist/elements/elements.html', 'bower_components/**/*'], ['vulcanize']);
 });
 
 gulp.task('default', ['build', 'watch']);
 
 gulp.task('build', function() {
-  runSequence(['clean:elements', 'clean:third_party', 'clean:static'], ['third_party', 'static', 'elements', 'bower', 'styles'], 'sw', 'sw-toolbox', 'vulcanize');
+  runSequence(['clean:elements', 'clean:third_party', 'clean:static'], ['third_party', 'static', 'elements', 'styles'], 'index', 'sw', 'sw-toolbox', 'vulcanize');
 });
