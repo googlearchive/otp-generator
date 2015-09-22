@@ -14,8 +14,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
-<link rel="import" href="../../bower_components/idb-node/idb-node.html">
+<link rel="import" href="../../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../../bower_components/idb-node/idb-node.html">
 <script src="../../third_party/base32decode-javascript/Base32Decode.js"></script>
 
 <dom-module id="otp-generator">
@@ -28,39 +28,53 @@ limitations under the License.
   Polymer({
     is: 'otp-generator',
     properties: {
-      otp: {
+      otps: {
         type: Object,
-        value: {}
-      },
-      remaining: {
-        type: Number,
-        value: 0
+        value: function() { return [] },
+        readOnly: true,
+        notify: true
       },
       refreshInterval: {
         type: Number,
         value: 30
-      },
-      isReady: {
-        type: Object,
-        value: null
       }
     },
     ready: function() {
-      var that = this;
-      new Polymer.IronMeta({type: 'otp', key: 'otp', value: this});
-      this.timer = setInterval(function() {
-        var time = parseInt(Date.now()/1000);
-        var counter = Math.floor(time/ that.refreshInterval);
-        var remaining = ((counter+1) * that.refreshInterval) - time;
-        that.fire('timer', {remaining: remaining});
-      }, 1000);
+      this.generateOTPs();
+    },
+    generateOTPs: function() {
+      return this.getOTPList().then(function(otps) {
+        // For now all OTPs have the same counter
+        var time = Math.round(Date.now()/1000);
+        var counter = Math.floor(time/this.refreshInterval);
+        var validFrom = counter * this.refreshInterval * 1000;
+        var validTo = (counter + 1) * this.refreshInterval * 1000;
+        var now = Date.now();
+
+        setTimeout(this.generateOTPs.bind(this), validTo - now);
+
+        var promises = otps.map(function(otp) {
+          return this.getTOTP(otp.id).then(function(token) {
+            return {
+              token: token,
+              id: otp.id,
+              name: otp.name,
+              validFrom: validFrom,
+              validTo: validTo
+            }
+          }.bind(this));
+        }.bind(this));
+
+        return Promise.all(promises).then(function(otps) {
+          this._setOtps(otps);
+        }.bind(this));
+      }.bind(this));
     },
     getOTPList: function() {
       return this.$.db.getAll();
     },
     getHOTP: function(id, counter) {
-      var that = this;
-      return that.$.db.get(id).then(function(entry) {
+      return this.$.db.get(id).then(function(entry) {
         var data = [];
         for (var i = 0; i < 8; i++) {
           data[7 - i] = counter & 255;
@@ -89,12 +103,16 @@ limitations under the License.
       });
     },
     getTOTP: function(id) {
-      var time = parseInt(Date.now()/1000);
-      var counter = Math.floor(time/ this.refreshInterval);
+      var time = Math.round(Date.now()/1000);
+      var counter = Math.floor(time/this.refreshInterval);
       return this.getHOTP(id, counter);
     },
-    importKey: function(id, name, key, issuer) {
-      var that = this;
+    importKey: function(options) {
+      var id = options.id;
+      var name = options.name;
+      var key = options.key;
+      var issuer = options.issuer;
+
       if (id == undefined || key == undefined) {
         throw 'id or key is undefined';
       } else {
@@ -105,28 +123,24 @@ limitations under the License.
             name: 'SHA-1'
           }
         }, false, ['sign', 'verify']).then(function(cryptoKey) {
-          that.$.db.put({
+          return this.$.db.put({
             id: id,
             name: name,
             key: cryptoKey,
             issuer: issuer
           }).then(function() {
+            this.generateOTPs();
             return true;
-          }, function(error) {
-            throw error;
-          });
-        }, function(error) {
-          throw error;
-        });
+          }.bind(this));
+        }.bind(this));
       }
     },
     remove: function(id) {
       if (!id) throw 'id not specified';
       return this.$.db.delete(id).then(function(e) {
+        this.generateOTPs();
         return true;
-      }, function(error) {
-        throw error;
-      });
+      }.bind(this));
     }
   });
   </script>
