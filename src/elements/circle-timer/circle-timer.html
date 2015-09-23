@@ -16,6 +16,12 @@ limitations under the License.
 -->
 <dom-module id="circle-timer">
   <template>
+    <style>
+    canvas {
+      width: 40px;
+      height: 40px;
+    }
+    </style>
     <canvas id="canvas"></canvas>
   </template>
   <script>
@@ -37,7 +43,7 @@ limitations under the License.
       var context = canvas.getContext('2d');
       var centerX = canvas.width / 2;
       var centerY = canvas.height / 2;
-      var thickness = 6;
+      var thickness = 12;
       var radius = (Math.min(canvas.width, canvas.height) - thickness) / 2;
 
       canvas.width = canvas.width;
@@ -56,8 +62,8 @@ limitations under the License.
     },
 
     ready: function() {
-      this.$.canvas.width = 40;
-      this.$.canvas.height = 40;
+      this.$.canvas.width = 80;
+      this.$.canvas.height = 80;
       requestAnimationFrame(this._animate.bind(this));
     }
 
