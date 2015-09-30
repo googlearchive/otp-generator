@@ -9,6 +9,9 @@
     "Eiji Kitamura <agektmr@google.com>",
     "Mat Scales <mscales@google.com>"
   ],
+  "scripts": {
+    "postinstall": "bower install"
+  },
   "devDependencies": {
     "del": "^1.1.1",
     "gulp": "^3.8.11",
