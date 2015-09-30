@@ -43,7 +43,7 @@ limitations under the License.
       var context = canvas.getContext('2d');
       var centerX = canvas.width / 2;
       var centerY = canvas.height / 2;
-      var thickness = 12;
+      var thickness = 6 * window.devicePixelRatio;
       var radius = (Math.min(canvas.width, canvas.height) - thickness) / 2;
 
       canvas.width = canvas.width;
@@ -62,8 +62,9 @@ limitations under the License.
     },
 
     ready: function() {
-      this.$.canvas.width = 80;
-      this.$.canvas.height = 80;
+      var dpr = window.devicePixelRatio;
+      this.$.canvas.width = 40 * dpr;
+      this.$.canvas.height = 40 * dpr;
       requestAnimationFrame(this._animate.bind(this));
     }
 
