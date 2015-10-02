@@ -11,19 +11,27 @@ skip_files:
 handlers:
 
 - url: /
-  script: template.app
+  static_files: dist/index.html
+  expiration: "365d"
+  upload: dist/index.html
   secure: always
 
-- url: /images/(.*)
-  static_files: dist/images/\1
+- url: /elements/(.*)
+  static_files: dist/elements/\1
   expiration: "365d"
-  upload: dist/images/(.*)
+  upload: dist/elements/(.*)
   secure: always
 
 - url: /sw.js
   static_files: dist/scripts/sw.js
   expiration: "1s"
   upload: dist/scripts/sw.js
+  secure: always
+
+- url: /sw-import.js
+  static_files: dist/sw-import.js
+  expiration: "1s"
+  upload: dist/sw-import.js
   secure: always
 
 - url: /favicon.ico
@@ -70,52 +78,41 @@ handlers:
   upload: dist/LICENSE
   secure: always
 
-- url: /(.*)
-  script: template.app
-  secure: always
-
-- url: /src/(.*)
-  static_files: src/\1
-  upload: src/(.*)
-  secure: always
-
 libraries:
 - name: webapp2
   version: latest
-- name: jinja2
-  version: latest
 
-pagespeed:
-  disabled_rewriters:
-  - add_instrumentation
-  - CombineJs
-  - ConvertMetaTags
-  - FallbackRewriteCssUrls
-  - FlattenCssImports
-  - FlushSubresources
-  - ImageConvertGifToPng
-  - ImageConvertToJpeg
-  - ImageConvertToWebpLossless
-  - ImageResize
-  - InlineImages
-  - InlineImportToLink
-  - InlinePreviewImages
-  - InsertDnsPrefetch
-  - JsOptimize
-  - LazyloadImages
-  - MinifyCss
-  - MoveCssToHead
-  - ProxyCss
-  - ProxyImages
-  - ProxyJs
-  enabled_rewriters:
-  - CombineCss
-  - InlineCss
-  - WebpOptimization
-  - PrioritizeCriticalCss
-  - ImageJpegSubsampling
-  - ImageProgressiveJpeg
-  - ImageRecompressJpeg
-  - ImageRecompressPng
-  - ImageStripColorProfile
-  - ImageStripMetadata
+# pagespeed:
+#   disabled_rewriters:
+#   - add_instrumentation
+#   - CombineJs
+#   - ConvertMetaTags
+#   - FallbackRewriteCssUrls
+#   - FlattenCssImports
+#   - FlushSubresources
+#   - ImageConvertGifToPng
+#   - ImageConvertToJpeg
+#   - ImageConvertToWebpLossless
+#   - ImageResize
+#   - InlineImages
+#   - InlineImportToLink
+#   - InlinePreviewImages
+#   - InsertDnsPrefetch
+#   - JsOptimize
+#   - LazyloadImages
+#   - MinifyCss
+#   - MoveCssToHead
+#   - ProxyCss
+#   - ProxyImages
+#   - ProxyJs
+#   enabled_rewriters:
+#   - CombineCss
+#   - InlineCss
+#   - WebpOptimization
+#   - PrioritizeCriticalCss
+#   - ImageJpegSubsampling
+#   - ImageProgressiveJpeg
+#   - ImageRecompressJpeg
+#   - ImageRecompressPng
+#   - ImageStripColorProfile
+#   - ImageStripMetadata
