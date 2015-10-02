@@ -100,8 +100,7 @@ limitations under the License.
 
     <platinum-sw-register auto-register base-uri="{{base}}/elements/platinum-sw/"
                           on-service-worker-installed="onSWInstalled">
-      <platinum-sw-cache default-cache-strategy="fastest"
-                         precache-file="precache.json">
+      <platinum-sw-cache cache-config-file="../precache.json">
       </platinum-sw-cache>
     </platinum-sw-register>
 
