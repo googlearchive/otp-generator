@@ -372,7 +372,7 @@ limitations under the License.
     _onChangeCamera: function() {
       if (this.cameraManager) {
         if (this.cameraManager.localStream !== undefined) {
-          this.cameraManager.localStream.stop();
+          this.cameraManager.localStream.getTracks()[0].stop();
           this.cameraManager.localStream = undefined;
         }
         this.cameraManager.getCamera(this.cameras[this._frontCamera ? 0 : 1]);
@@ -388,7 +388,7 @@ limitations under the License.
           }
           this.cameraManager.getCamera(this.cameras[cameraIdx]);
         } else if (this.cameraManager.localStream !== undefined) {
-          this.cameraManager.localStream.stop();
+          this.cameraManager.localStream.getTracks()[0].stop();
           this.cameraManager.localStream = undefined;
         }
       }
@@ -398,7 +398,7 @@ limitations under the License.
       if (document.visibilityState === 'hidden') {
         // Disconnect the camera.
         if (this.cameraManager.localStream !== undefined) {
-          this.cameraManager.localStream.stop();
+          this.cameraManager.localStream.getTracks()[0].stop();
           this.cameraManager.localStream = undefined;
         }
       } else {
