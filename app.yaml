@@ -10,7 +10,7 @@ skip_files:
 
 handlers:
 
-- url: /
+- url: /(index\.html)?
   static_files: dist/index.html
   expiration: "365d"
   upload: dist/index.html
@@ -22,10 +22,10 @@ handlers:
   upload: dist/elements/(.*)
   secure: always
 
-- url: /sw.js
-  static_files: dist/scripts/sw.js
+- url: /precache.json
+  static_files: dist/precache.json
   expiration: "1s"
-  upload: dist/scripts/sw.js
+  upload: dist/precache.json
   secure: always
 
 - url: /sw-import.js
@@ -52,6 +52,12 @@ handlers:
   upload: dist/scripts/(.*)
   secure: always
 
+- url: /sw-toolbox/(.*)
+  static_files: dist/sw-toolbox/\1
+  expiration: "1d"
+  upload: dist/sw-toolbox/(.*)
+  secure: always
+
 - url: /third_party/(.*)
   static_files: dist/third_party/\1
   expiration: "1d"
@@ -70,17 +76,6 @@ handlers:
   expiration: "1s"
   upload: dist/elements/(.*)
   secure: always
-
-- url: /LICENSE
-  static_files: dist/LICENSE
-  expiration: "7d"
-  mime_type: text/plain
-  upload: dist/LICENSE
-  secure: always
-
-libraries:
-- name: webapp2
-  version: latest
 
 # pagespeed:
 #   disabled_rewriters:
