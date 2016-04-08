@@ -24,18 +24,23 @@ limitations under the License.
       <otp-item index="{{index}}" otp="{{item}}" on-remove="onRemove"></otp-item>
     </template>
   </template>
-  <script>
-  Polymer({
-    is: 'otp-items',
-    properties: {
-    },
-    add: function(options) {
-      return this.$.generator.importKey(options);
-    },
-    onRemove: function(e) {
-      this.$.generator.remove(e.detail);
-      this.fire('remove');
-    }
-  });
-  </script>
 </dom-module>
+
+<script>
+class OtpItems {
+  get is() {
+    return 'otp-items';
+  }
+
+  add(options) {
+    return this.$.generator.importKey(options);
+  }
+
+  onRemove(e) {
+    this.$.generator.remove(e.detail);
+    this.fire('remove');
+  }
+}
+
+Polymer(OtpItems.prototype);
+</script>

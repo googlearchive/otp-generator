@@ -16,17 +16,17 @@
  */
 
 var QRClient = function() {
- 	var worker = new Worker('third_party/jsqrcode/qrworker.js');
- 	var currentCallback;
+  var worker = new Worker('third_party/jsqrcode/qrworker.js');
+  var currentCallback;
 
- 	this.decode = function(imageData, callback) {
- 		worker.postMessage(imageData);
-    	currentCallback = callback;
- 	};
+  this.decode = function(imageData, callback) {
+    worker.postMessage(imageData);
+    currentCallback = callback;
+  };
 
- 	worker.onmessage = function(e) {
- 		if(currentCallback) {
- 			currentCallback(e.data);
- 		}
- 	};
- };
+  worker.onmessage = function(e) {
+    if (currentCallback) {
+      currentCallback(e.data);
+    }
+  };
+};

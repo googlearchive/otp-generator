@@ -14,11 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../../bower_components/polymer/polymer.html">
-<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../../bower_components/paper-fab/paper-fab.html">
-<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
-<link rel="import" href="../../../bower_components/iron-icons/image-icons.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-fab/paper-fab.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-icons/image-icons.html">
 <script src="qrclient.js"></script>
 
 <dom-module id="qr-code">
@@ -112,188 +111,205 @@ limitations under the License.
       </div>
     </div>
   </template>
-  <script>
-  var requestAnimationFrame = (function() {
-    'use strict';
-    return window.requestAnimationFrame ||
-      window.webkitRequestAnimationFrame ||
-      window.mozRequestAnimationFrame ||
-      function(callback) {
-        window.setTimeout(callback, 1000 / 60);
-      };
-  })();
+</dom-module>
 
-  var CameraManager = function(that) {
-    // The camera gets a video stream, and adds it to a canvas.
-    // The canvas is analysed but also displayed to the user.
-    // The video is never show
-
-    var self = this;
-
-    var cameraRoot = that.$.camera;
-    var cameraVideo = that.$['qr-video'];
-    var cameraCanvas = that.$['qr-canvas'];
-    var cameraOverlay = that.$['qr-overlay'];
-
-    var canvas = cameraCanvas.getContext('2d');
-
-    // Variables
-    var dWidth;
-    var dHeight;
-    var dx = 0;
-    var dy = 0;
-
-    var sx = 0;
-    var sy = 0;
-    var sHeight;
-    var sWidth;
-    var scaleX;
-    var scaleY;
-    var scaleFactor = 1;
-
-    var coordinatesHaveChanged = false;
-    var prevCoordinates = 0;
-    // The camera stream.
-    this.localStream;
-
-    var overlayCoords = { x:0, y: 0, width: cameraCanvas.width, height: cameraCanvas.height };
-
-    this.getImageData = function() {
-      // Only get the image data for what we will send to the detector.
-      return canvas.getImageData(overlayCoords.x, overlayCoords.y, overlayCoords.width, overlayCoords.height);
+<script>
+var requestAnimationFrame = (function() {
+  'use strict';
+  return window.requestAnimationFrame ||
+    window.webkitRequestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    function(callback) {
+      window.setTimeout(callback, 1000 / 60);
     };
+})();
 
-    var drawOverlay = function(width, height) {
+// A shim for getUserMedia method on the mediaDevices object.
+if (!navigator.mediaDevices.getUserMedia) {
+  navigator.mediaDevices.getUserMedia = function(constraints) {
+    return new Promise(function(resolve, reject) {
+      navigator.webkitGetUserMedia(constraints, resolve, reject);
+    });
+  };
+}
 
-      var minLength = Math.min(width, height);
+let CameraManager = function(that) {
+  // The camera gets a video stream, and adds it to a canvas.
+  // The canvas is analysed but also displayed to the user.
+  // The video is never show
 
-      var boxHeightSize = (height + 64 - minLength) / 2;
-      var boxWidthSize = (width + 64 - minLength) / 2;
+  let self = this;
 
-      if(coordinatesHaveChanged) {
+  let cameraRoot = that.$.camera;
+  let cameraVideo = that.$['qr-video'];
+  let cameraCanvas = that.$['qr-canvas'];
+  let cameraOverlay = that.$['qr-overlay'];
 
-        cameraOverlay.style.borderTopWidth = boxHeightSize + "px";
-        cameraOverlay.style.borderLeftWidth = boxWidthSize + "px";
-        cameraOverlay.style.borderRightWidth = boxWidthSize + "px";
-        cameraOverlay.style.borderBottomWidth = boxHeightSize + "px";
+  let canvas = cameraCanvas.getContext('2d');
 
-        overlayCoords.x = boxWidthSize;
-        overlayCoords.y = boxHeightSize
-        overlayCoords.width = cameraCanvas.width - (boxWidthSize * 2);
-        overlayCoords.height = cameraCanvas.height - (boxHeightSize * 2);
+  // Variables
+  let dWidth, dHeight, dx = 0, dy = 0;
+  let sx = 0, sy = 0, sHeight, sWidth, scaleX, scaleY, scaleFactor = 1;
 
-      }
-    };
+  let coordinatesHaveChanged = false;
+  let prevCoordinates = 0;
+  // The camera stream.
+  this.localStream;
 
-    var setupVariables = function(e) {
-      dWidth = cameraCanvas.width = window.innerWidth;
-      dHeight = cameraCanvas.height = window.innerHeight;
-      dx = 0;
-      dy = 0;
-
-      sx = 0;
-      sy = 0;
-
-      // Make the video coordinate space the same as the window.
-      // size in the longest dimension.
-      // Then center and clip. and map back to correct space.
-      scaleX = (dWidth / cameraVideo.videoWidth);
-      scaleY = (dHeight / cameraVideo.videoHeight);
-      scaleFactor = Math.max(scaleX, scaleY);
-
-      // Trim the left
-      sx = ((cameraVideo.videoWidth * scaleFactor) / 2) - (dWidth/ 2);
-      sy = ((cameraVideo.videoHeight * scaleFactor) / 2) - (dHeight / 2);
-
-      // Trim the right.
-      sWidth = (cameraVideo.videoWidth * scaleFactor) - sx * 2;
-      sHeight = (cameraVideo.videoHeight * scaleFactor) - sy * 2;
-
-      return (cameraVideo.videoWidth > 0);
-    };
-
-    var captureFrame = function() {
-
-      // Work out which part of the video to capture and apply to canvas.
-      canvas.drawImage(cameraVideo, sx /scaleFactor, sy/scaleFactor, sWidth/scaleFactor, sHeight/scaleFactor, dx, dy, dWidth, dHeight);
-
-      drawOverlay(dWidth, dHeight, scaleFactor);
-
-      // A frame has been captured.
-      if (self.onframe) self.onframe();
-
-      coordinatesHaveChanged = false;
-
-      requestAnimationFrame(captureFrame.bind(self));
-    };
-
-    this.getCamera = function(videoSource) {
-
-      var gUM = (navigator.getUserMedia ||
-                       navigator.webkitGetUserMedia ||
-                       navigator.mozGetUserMedia ||
-                       navigator.msGetUserMedia || null);
-
-      var params;
-
-      if(videoSource === undefined && that.cameras.length == 0) {
-        // Because we have no source information, have to assume it user facing.
-        params = { video: true };
-      } else {
-        params = { video: { optional: [{sourceId: videoSource.id}] } };
-      }
-
-      gUM.call(navigator, params, function(theStream) {
-        self.localStream = theStream;
-
-        cameraVideo.onloadeddata = function(e) {
-
-          coordinatesHaveChanged = true;
-
-          var isSetup = setupVariables(e);
-          if(isSetup) {
-            requestAnimationFrame(captureFrame.bind(self));
-          }
-          else {
-            // This is just to get around the fact that the videoWidth is not
-            // available in Firefox until sometime after the data has loaded.
-            setTimeout(function() {
-              setupVariables(e);
-              requestAnimationFrame(captureFrame.bind(self));
-            }, 1000);
-          }
-
-          // The video is ready, and the camerea captured
-          if(videoSource === undefined) {
-            // There is no meta data about the camera, assume user facing.
-            videoSource = {
-              'facing': 'user'
-            };
-          }
-
-          var facing = videoSource.facing ? videoSource.facing : 'user';
-          cameraRoot.classList.remove('Camera--facing-environment');
-          cameraRoot.classList.remove('Camera--facing-user');
-          cameraRoot.classList.add('Camera--facing-' + facing);
-        };
-
-        cameraVideo.src = window.URL.createObjectURL(self.localStream);
-        cameraVideo.load();
-        cameraVideo.play();
-      }, function(error) {
-        console.error(error);
-      });
-    };
-
-    window.addEventListener('resize', function() {
-      coordinatesHaveChanged = true;
-      setupVariables();
-    }.bind(this));
+  let overlayCoords = {
+    x: 0,
+    y: 0,
+    width: cameraCanvas.width,
+    height: cameraCanvas.height
   };
 
-  Polymer({
-    is: 'qr-code',
-    properties: {
+  this.getImageData = function() {
+    // Only get the image data for what we will send to the detector.
+    return canvas.getImageData(
+      overlayCoords.x,
+      overlayCoords.y,
+      overlayCoords.width,
+      overlayCoords.height
+    );
+  };
+
+  let drawOverlay = (width, height) => {
+
+    let minLength = Math.min(width, height);
+
+    let boxHeightSize = (height + 64 - minLength) / 2;
+    let boxWidthSize = (width + 64 - minLength) / 2;
+
+    if (coordinatesHaveChanged) {
+      cameraOverlay.style.borderTopWidth = boxHeightSize + "px";
+      cameraOverlay.style.borderLeftWidth = boxWidthSize + "px";
+      cameraOverlay.style.borderRightWidth = boxWidthSize + "px";
+      cameraOverlay.style.borderBottomWidth = boxHeightSize + "px";
+
+      overlayCoords.x = boxWidthSize;
+      overlayCoords.y = boxHeightSize
+      overlayCoords.width = cameraCanvas.width - (boxWidthSize * 2);
+      overlayCoords.height = cameraCanvas.height - (boxHeightSize * 2);
+    }
+  };
+
+  let setupVariables = e => {
+    dWidth = cameraCanvas.width = window.innerWidth;
+    dHeight = cameraCanvas.height = window.innerHeight;
+    dx = 0;
+    dy = 0;
+
+    sx = 0;
+    sy = 0;
+
+    // Make the video coordinate space the same as the window.
+    // size in the longest dimension.
+    // Then center and clip. and map back to correct space.
+    scaleX = (dWidth / cameraVideo.videoWidth);
+    scaleY = (dHeight / cameraVideo.videoHeight);
+    scaleFactor = Math.max(scaleX, scaleY);
+
+    // Trim the left
+    sx = ((cameraVideo.videoWidth * scaleFactor) / 2) - (dWidth/ 2);
+    sy = ((cameraVideo.videoHeight * scaleFactor) / 2) - (dHeight / 2);
+
+    // Trim the right.
+    sWidth = (cameraVideo.videoWidth * scaleFactor) - sx * 2;
+    sHeight = (cameraVideo.videoHeight * scaleFactor) - sy * 2;
+
+    return (cameraVideo.videoWidth > 0);
+  };
+
+  let captureFrame = () => {
+    // Work out which part of the video to capture and apply to canvas.
+    canvas.drawImage(
+      cameraVideo,
+      sx /scaleFactor,
+      sy/scaleFactor,
+      sWidth/scaleFactor,
+      sHeight/scaleFactor,
+      dx,
+      dy,
+      dWidth,
+      dHeight
+    );
+
+    drawOverlay(dWidth, dHeight, scaleFactor);
+
+    // A frame has been captured.
+    if (self.onframe) self.onframe();
+
+    coordinatesHaveChanged = false;
+
+    requestAnimationFrame(captureFrame.bind(self));
+  };
+
+  this.getCamera = videoSource => {
+    let params;
+
+    if (videoSource === undefined && that.cameras.length == 0) {
+      // Because we have no source information, have to assume it user facing.
+      params = { video: true };
+    } else {
+      params = { video: { deviceId: videoSource.deviceId } };
+    }
+
+    return navigator.mediaDevices.getUserMedia(params)
+    .then(theStream => {
+      self.localStream = theStream;
+
+      cameraVideo.onloadeddata = function(e) {
+
+        coordinatesHaveChanged = true;
+
+        var isSetup = setupVariables(e);
+        if (isSetup) {
+          requestAnimationFrame(captureFrame.bind(self));
+        } else {
+          // This is just to get around the fact that the videoWidth is not
+          // available in Firefox until sometime after the data has loaded.
+          setTimeout(function() {
+            setupVariables(e);
+            requestAnimationFrame(captureFrame.bind(self));
+          }, 1000);
+        }
+
+        // // The video is ready, and the camerea captured
+        // if (videoSource === undefined) {
+        //   // There is no meta data about the camera, assume user facing.
+        //   videoSource = {
+        //     'facing': 'user'
+        //   };
+        // }
+
+        // var facing = videoSource.facing ? videoSource.facing : 'user';
+        let facing = /front/.test(videoSource.label) ? 'user' : 'environment';
+        cameraRoot.classList.remove('Camera--facing-environment');
+        cameraRoot.classList.remove('Camera--facing-user');
+        cameraRoot.classList.add('Camera--facing-' + facing);
+      };
+
+      cameraVideo.src = window.URL.createObjectURL(self.localStream);
+      cameraVideo.load();
+      cameraVideo.play();
+    }, error => {
+      console.error(error);
+    });
+  };
+
+  window.addEventListener('resize', () => {
+    coordinatesHaveChanged = true;
+    setupVariables();
+  });
+};
+
+class QrCode {
+  get is() {
+    return 'qr-code';
+  }
+
+  get properties() {
+    return {
       _camera: {
         type: Object,
         value: {}
@@ -316,95 +332,102 @@ limitations under the License.
         value: false,
         observer: '_onActiveChanged'
       }
-    },
-    listeners: {
+    }
+  }
+
+  get listeners() {
+    return {
       'visibilitychange': 'onVisibilityChange'
-    },
-    ready: function() {
-      this.cameraManager = new CameraManager(this);
-      this.client        = new QRClient();
-      this.processingFrame = false;
+    }
+  }
 
-      var that = this;
-      this.cameraManager.onframe = function() {
-        // There is a frame in the camera, what should we do with it?
-        if(that.processingFrame == false) {
-          that.processingFrame = true;
-          var imageData = that.cameraManager.getImageData();
-          that.client.decode(imageData, function(result) {
-            if(result !== undefined) {
-              that.fire('qrcode-detected', {code: result});
-            }
-            that.processingFrame = false;
-          });
-        }
-      };
+  ready() {
+    this.cameraManager = new CameraManager(this);
+    this.client        = new QRClient();
+    this.processingFrame = false;
 
-      if('getSources' in MediaStreamTrack) {
-        MediaStreamTrack.getSources(function(sources) {
-
-          for(var i = 0; i < sources.length; i++) {
-            var source = sources[i];
-            if(source.kind === 'video') {
-              if(source.facing === 'environment') {
-                // cameras facing the environment are pushed to the front of the page
-                that.cameras.unshift(source);
-              } else {
-                that.cameras.push(source);
-              }
-            }
+    this.cameraManager.onframe = () => {
+      // There is a frame in the camera, what should we do with it?
+      if (this.processingFrame == false) {
+        this.processingFrame = true;
+        let imageData = this.cameraManager.getImageData();
+        this.client.decode(imageData, result => {
+          if (result !== undefined) {
+            this.fire('qrcode-detected', {code: result});
           }
-
-          if (that.cameras.length > 1) {
-            that.toggleSwitch = true;
-          }
+          this.processingFrame = false;
         });
       }
+    };
 
-      document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
-    },
-    _getCameraIcon: function(frontCamera) {
-      return frontCamera ? 'image:camera-front' : 'image:camera-rear';
-    },
-    toggleCamera: function(e) {
-      this._frontCamera = !this._frontCamera;
-    },
-    _onChangeCamera: function() {
-      if (this.cameraManager) {
-        if (this.cameraManager.localStream !== undefined) {
-          this.cameraManager.localStream.getTracks()[0].stop();
-          this.cameraManager.localStream = undefined;
-        }
-        this.cameraManager.getCamera(this.cameras[this._frontCamera ? 0 : 1]);
-      }
-    },
-    _onActiveChanged: function() {
-      if (this.cameraManager) {
-        if (this.active) {
-          if (this.cameras.length > 1) {
-            var cameraIdx = this._frontCamera ? 0 : 1;
-          } else {
-            var cameraIdx = 0;
+    if ('mediaDevices' in navigator) {
+      navigator.mediaDevices.enumerateDevices().then(devices => {
+        for (let device of devices) {
+          if (device.kind === 'videoinput') {
+            if (/back/.test(device.label)) {
+              this.cameras.unshift(device);
+            } else {
+              this.cameras.push(device);
+            }
           }
-          this.cameraManager.getCamera(this.cameras[cameraIdx]);
-        } else if (this.cameraManager.localStream !== undefined) {
-          this.cameraManager.localStream.getTracks()[0].stop();
-          this.cameraManager.localStream = undefined;
         }
+
+        if (this.cameras.length > 1) {
+          this.toggleSwitch = true;
+        }
+      });
+    }
+
+    document.addEventListener('visibilitychange', this.onVisibilityChange.bind(this));
+  }
+
+  _getCameraIcon(frontCamera) {
+    return frontCamera ? 'image:camera-front' : 'image:camera-rear';
+  }
+
+  toggleCamera(e) {
+    this._frontCamera = !this._frontCamera;
+  }
+
+  _onChangeCamera() {
+    if (this.cameraManager) {
+      if (this.cameraManager.localStream !== undefined) {
+        this.cameraManager.localStream.getTracks()[0].stop();
+        this.cameraManager.localStream = undefined;
       }
-    },
-    onVisibilityChange: function(e) {
-      if (!this.active) return;
-      if (document.visibilityState === 'hidden') {
-        // Disconnect the camera.
-        if (this.cameraManager.localStream !== undefined) {
-          this.cameraManager.localStream.getTracks()[0].stop();
-          this.cameraManager.localStream = undefined;
+      this.cameraManager.getCamera(this.cameras[this._frontCamera ? 0 : 1]);
+    }
+  }
+
+  _onActiveChanged() {
+    if (this.cameraManager) {
+      if (this.active) {
+        if (this.cameras.length > 1) {
+          var cameraIdx = this._frontCamera ? 0 : 1;
+        } else {
+          var cameraIdx = 0;
         }
-      } else {
-        this._onChangeCamera();
+        this.cameraManager.getCamera(this.cameras[cameraIdx]);
+      } else if (this.cameraManager.localStream !== undefined) {
+        this.cameraManager.localStream.getTracks()[0].stop();
+        this.cameraManager.localStream = undefined;
       }
     }
-  });
-  </script>
-</dom-module>
+  }
+
+  onVisibilityChange(e) {
+    if (!this.active) return;
+    if (document.visibilityState === 'hidden') {
+      // Disconnect the camera.
+      if (this.cameraManager.localStream !== undefined) {
+        this.cameraManager.localStream.getTracks()[0].stop();
+        this.cameraManager.localStream = undefined;
+      }
+    } else {
+      this._onChangeCamera();
+    }
+  }
+};
+
+Polymer(QrCode.prototype);
+</script>

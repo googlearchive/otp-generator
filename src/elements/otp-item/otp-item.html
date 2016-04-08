@@ -14,10 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../../bower_components/iron-meta/iron-meta.html">
-<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../circle-timer/circle-timer.html">
 <link rel="import" href="../otp-generator/otp-generator.html">
 
@@ -57,13 +57,19 @@ limitations under the License.
       <paper-icon-button icon="delete" on-tap="onRemove"></paper-icon-button>
     </paper-item>
   </template>
-  <script>
-  (function() {
-    var colors = ['#aaaa00', '#aa00aa', '#00aaaa'];
+</dom-module>
 
-    Polymer({
-      is: 'otp-item',
-      properties: {
+<script>
+(function() {
+  var colors = ['#aaaa00', '#aa00aa', '#00aaaa'];
+
+  class OtpItem {
+    get is() {
+      return 'otp-item';
+    }
+
+    get properties() {
+      return {
         otp: {
           type: Object,
           value: function() { return {}; },
@@ -78,14 +84,18 @@ limitations under the License.
           type: Number,
           observer: 'indexChanged'
         }
-      },
-      onRemove: function(e) {
-        this.fire('remove', this.otp.id);
-      },
-      indexChanged: function() {
-        this._setColor(colors[this.index % colors.length]);
       }
-    });
-  })();
-  </script>
-</dom-module>
+    }
+
+    onRemove(e) {
+      this.fire('remove', this.otp.id);
+    }
+
+    indexChanged() {
+      this._setColor(colors[this.index % colors.length]);
+    }
+  };
+
+  Polymer(OtpItem.prototype);
+})();
+</script>
