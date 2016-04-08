@@ -25,22 +25,31 @@ limitations under the License.
   <style>
     paper-item {
       height: 64px;
+      padding: 0 10px;
+    }
+    circle-timer {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      padding: 5px 0;
+    }
+    .item-body {
+      width: 200px;
+      @apply(--layout-flex);
     }
     .token {
       font-size: 30pt;
+      line-height: 30px;
       font-weight: lighter;
       color: #4285F4;
     }
-    div[secondary] {
+    .name {
       color: #A8A8A8;
+      line-height: 18px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       font-size: 11pt;
-    }
-    circle-timer {
-      margin-right: 20px;
-      padding-bottom: 10px;
     }
   </style>
   <template>
@@ -50,10 +59,10 @@ limitations under the License.
         end="{{otp.validTo}}"
         color="{{color}}">
       </circle-timer>
-      <paper-item-body two-line class="flex">
+      <div class="item-body">
         <div class="token">{{otp.token}}</div>
-        <div secondary>{{otp.name}}</div>
-      </paper-item-body>
+        <div class="name">{{otp.name}}</div>
+      </div>
       <paper-icon-button icon="delete" on-tap="onRemove"></paper-icon-button>
     </paper-item>
   </template>
