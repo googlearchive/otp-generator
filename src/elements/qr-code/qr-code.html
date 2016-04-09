@@ -245,17 +245,38 @@ let CameraManager = function(that) {
   };
 
   this.getCamera = videoSource => {
+    // let params;
+    //
+    // if (videoSource === undefined && that.cameras.length == 0) {
+    //   // Because we have no source information, have to assume it user facing.
+    //   params = { video: true };
+    // } else {
+    //   // params = { video: { deviceId: videoSource.deviceId } };
+    //   params = { video: { facingMode: { exact: 'environment' } } };
+    // }
+    //
+    // return navigator.mediaDevices.getUserMedia(params)
+    // .then(theStream => {
+    let gUM = (navigator.getUserMedia ||
+               navigator.webkitGetUserMedia ||
+               navigator.mozGetUserMedia ||
+               navigator.msGetUserMedia || null);
+
+    gUM = constraints => new Promise((resolve, reject) => {
+      gUM(constraints, resolve, reject);
+    });
+
     let params;
 
     if (videoSource === undefined && that.cameras.length == 0) {
       // Because we have no source information, have to assume it user facing.
       params = { video: true };
     } else {
-      params = { video: { deviceId: videoSource.deviceId } };
+      params = { video: { optional: [ { sourceId: videoSource.id } ] } };
     }
 
-    return navigator.mediaDevices.getUserMedia(params)
-    .then(theStream => {
+    return gUM.call(navigator, params).then(theStream => {
+
       self.localStream = theStream;
 
       cameraVideo.onloadeddata = function(e) {
@@ -359,19 +380,37 @@ class QrCode {
         });
       }
     };
+    //
+    // if ('mediaDevices' in navigator) {
+    //   navigator.mediaDevices.enumerateDevices().then(devices => {
+    //     for (let device of devices) {
+    //       if (device.kind === 'videoinput') {
+    //         if (/back/.test(device.label)) {
+    //           this.cameras.unshift(device);
+    //         } else {
+    //           this.cameras.push(device);
+    //         }
+    //       }
+    //     }
+    //
+    //     if (this.cameras.length > 1) {
+    //       this.toggleSwitch = true;
+    //     }
+    //   });
+    // }
 
-    if ('mediaDevices' in navigator) {
-      navigator.mediaDevices.enumerateDevices().then(devices => {
-        for (let device of devices) {
-          if (device.kind === 'videoinput') {
-            if (/back/.test(device.label)) {
-              this.cameras.unshift(device);
+    if ('getSources' in MediaStreamTrack) {
+      MediaStreamTrack.getSources(sources => {
+        for (let source of sources) {
+          if (source.kind === 'video') {
+            if (source.facing === 'environment') {
+              // cameras facing the environment are pushed to the front of the page
+              this.cameras.unshift(source);
             } else {
-              this.cameras.push(device);
+              this.cameras.push(source);
             }
           }
         }
-
         if (this.cameras.length > 1) {
           this.toggleSwitch = true;
         }
