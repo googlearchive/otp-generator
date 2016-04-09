@@ -37,9 +37,9 @@ limitations under the License.
       width: 200px;
       @apply(--layout-flex);
     }
-    .token {
+    #token {
       font-size: 30pt;
-      line-height: 30px;
+      line-height: 40px;
       font-weight: lighter;
       color: #4285F4;
     }
@@ -59,8 +59,8 @@ limitations under the License.
         end="{{otp.validTo}}"
         color="{{color}}">
       </circle-timer>
-      <div class="item-body">
-        <div class="token">{{otp.token}}</div>
+      <div class="item-body" on-tap="copy">
+        <div id="token">{{otp.token}}</div>
         <div class="name">{{otp.name}}</div>
       </div>
       <paper-icon-button icon="delete" on-tap="onRemove"></paper-icon-button>
@@ -102,6 +102,20 @@ limitations under the License.
 
     indexChanged() {
       this._setColor(colors[this.index % colors.length]);
+    }
+
+    copy(e) {
+      let range = document.createRange();
+      range.selectNode(this.$.token);
+      window.getSelection().addRange(range);
+
+      if (document.execCommand('copy')) {
+        this.fire('show-toast', {
+          text: 'Token copied'
+        });
+      }
+
+      window.getSelection().removeAllRanges();
     }
   };
 
