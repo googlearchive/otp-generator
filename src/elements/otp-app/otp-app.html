@@ -126,6 +126,12 @@ class OtpApp {
     };
   }
 
+  get listeners() {
+    return {
+      'show-toast': 'showToast'
+    };
+  }
+
   openDialog(e) {
     e.stopPropagation();
     this.$.name.value = '';
@@ -156,7 +162,9 @@ class OtpApp {
     var matches = qrcode.match(/^otpauth:\/\/totp\/(.*?)\?(.*)$/);
     if (!matches) {
       this.openDialog(e);
-      this.showToast('Invalid key.');
+      this.fire('show-toast', {
+        text: 'Invalid key.'
+      });
     } else {
       name = decodeURIComponent(matches[1]);
       var queries = matches[2].split('&');
@@ -177,7 +185,9 @@ class OtpApp {
       this.$.secret.value = secret;
       this.$.name.value   = name;
       this.$.issuer.value = issuer;
-      this.showToast('Key obtained.');
+      this.fire('show-toast', {
+        text: 'Key obtained.'
+      });
     }
   }
 
@@ -190,31 +200,43 @@ class OtpApp {
     if (name.length > 0 && key.length > 0) {
       this.$.otps.add({id: id, name: name, key: key, issuer: issuer})
         .then(() => {
-          this.showToast('OTP added.');
+          this.fire('show-toast', {
+            text: 'OTP added.'
+          });
           this.$.dialog.close();
         })
         .catch(function(error) {
-          this.showToast(error);
+          this.fire('show-toast', {
+            text: error
+          });
         });
     } else {
-      this.showToast('Name and Key are required.');
+      this.fire('show-toast', {
+        text: 'Name and Key are required.'
+      });
     }
   }
 
   onSWInstalled(e) {
-    this.showToast('Ready to work offline');
+    this.fire('show-toast', {
+      text: 'Ready to work offline'
+    });
   }
 
   onError(e) {
-    this.showToast(e.detail);
+    this.fire('show-toast', {
+      text: e.detail
+    });
   }
 
   onRemove(e) {
-    this.showToast('OTP removed.');
+    this.fire('show-toast', {
+      text: 'OTP removed.'
+    });
   }
 
-  showToast(msg) {
-    this.$.toast.text = msg;
+  showToast(e) {
+    this.$.toast.text = e.detail.text;
     this.$.toast.show();
   }
 };
