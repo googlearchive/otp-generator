@@ -46,6 +46,15 @@ limitations under the License.
       right: 30px;
       bottom: 30px;
     }
+    #dialog {
+      overflow: scroll;
+    }
+    div.inputs {
+      margin: 24px 0;
+    }
+    div.buttons {
+      margin-bottom: 24px;
+    }
   </style>
   <template>
     <iron-pages class="content" selected="{{page}}">
@@ -84,10 +93,10 @@ limitations under the License.
     </iron-pages>
 
     <paper-dialog id="dialog">
-      <div>
-        <paper-input id="name" placeholder="Name"></paper-input>
-        <paper-input id="secret" type="password" placeholder="Key"></paper-input>
-        <paper-input id="issuer" hidden></paper-input>
+      <div class="inputs">
+        <paper-input id="name" label="Name"></paper-input>
+        <paper-input id="secret" type="password" label="Key"></paper-input>
+        <input type="hidden" id="issuer" hidden />
       </div>
       <div class="buttons">
         <paper-button raised dialog-dismiss>Cancel</paper-button>
