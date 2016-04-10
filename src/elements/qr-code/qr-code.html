@@ -257,14 +257,16 @@ let CameraManager = function(that) {
     //
     // return navigator.mediaDevices.getUserMedia(params)
     // .then(theStream => {
-    let gUM = (navigator.getUserMedia ||
-               navigator.webkitGetUserMedia ||
-               navigator.mozGetUserMedia ||
-               navigator.msGetUserMedia || null);
+    let getUserMedia = (navigator.getUserMedia ||
+                        navigator.webkitGetUserMedia ||
+                        navigator.mozGetUserMedia ||
+                        navigator.msGetUserMedia || null);
 
-    gUM = constraints => new Promise((resolve, reject) => {
-      gUM(constraints, resolve, reject);
-    });
+    gUM = constraints => {
+      return new Promise((resolve, reject) => {
+        getUserMedia.call(navigator, constraints, resolve, reject);
+      });
+    };
 
     let params;
 
@@ -275,8 +277,7 @@ let CameraManager = function(that) {
       params = { video: { optional: [ { sourceId: videoSource.id } ] } };
     }
 
-    return gUM.call(navigator, params).then(theStream => {
-
+    return gUM(params).then(theStream => {
       self.localStream = theStream;
 
       cameraVideo.onloadeddata = function(e) {
@@ -315,6 +316,7 @@ let CameraManager = function(that) {
       cameraVideo.play();
     }, error => {
       console.error(error);
+      Promise.reject();
     });
   };
 
@@ -434,7 +436,12 @@ class QrCode {
         this.cameraManager.localStream.getTracks()[0].stop();
         this.cameraManager.localStream = undefined;
       }
-      this.cameraManager.getCamera(this.cameras[this._frontCamera ? 0 : 1]);
+      this.cameraManager.getCamera(this.cameras[this._frontCamera ? 0 : 1])
+      .catch(function() {
+        this.fire('show-toast', {
+          text: 'No cameras available'
+        });
+      });
     }
   }
 
