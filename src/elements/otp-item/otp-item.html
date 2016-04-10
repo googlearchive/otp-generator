@@ -110,6 +110,7 @@ limitations under the License.
       window.getSelection().addRange(range);
 
       if (document.execCommand('copy')) {
+        if (navigator.vibrate) navigator.vibrate(50);
         this.fire('show-toast', {
           text: 'Token copied'
         });
