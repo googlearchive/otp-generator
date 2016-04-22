@@ -14,10 +14,10 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-<link rel="import" href="../../../bower_components/iron-meta/iron-meta.html">
-<link rel="import" href="../../../bower_components/paper-item/paper-item.html">
-<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../../../bower_components/iron-icons/iron-icons.html">
+<link rel="import" href="../../bower_components/iron-meta/iron-meta.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/iron-icons/iron-icons.html">
 <link rel="import" href="../circle-timer/circle-timer.html">
 <link rel="import" href="../otp-generator/otp-generator.html">
 
@@ -25,22 +25,31 @@ limitations under the License.
   <style>
     paper-item {
       height: 64px;
+      padding: 0 10px;
     }
-    .token {
+    circle-timer {
+      width: 40px;
+      height: 40px;
+      margin-right: 10px;
+      padding: 5px 0;
+    }
+    .item-body {
+      width: 200px;
+      @apply(--layout-flex);
+    }
+    #token {
       font-size: 30pt;
+      line-height: 40px;
       font-weight: lighter;
       color: #4285F4;
     }
-    div[secondary] {
+    .name {
       color: #A8A8A8;
+      line-height: 18px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       font-size: 11pt;
-    }
-    circle-timer {
-      margin-right: 20px;
-      padding-bottom: 10px;
     }
   </style>
   <template>
@@ -50,20 +59,26 @@ limitations under the License.
         end="{{otp.validTo}}"
         color="{{color}}">
       </circle-timer>
-      <paper-item-body two-line class="flex">
-        <div class="token">{{otp.token}}</div>
-        <div secondary>{{otp.name}}</div>
-      </paper-item-body>
+      <div class="item-body" on-tap="copy">
+        <div id="token">{{otp.token}}</div>
+        <div class="name">{{otp.name}}</div>
+      </div>
       <paper-icon-button icon="delete" on-tap="onRemove"></paper-icon-button>
     </paper-item>
   </template>
-  <script>
-  (function() {
-    var colors = ['#aaaa00', '#aa00aa', '#00aaaa'];
+</dom-module>
 
-    Polymer({
-      is: 'otp-item',
-      properties: {
+<script>
+(function() {
+  var colors = ['#aaaa00', '#aa00aa', '#00aaaa'];
+
+  class OtpItem {
+    get is() {
+      return 'otp-item';
+    }
+
+    get properties() {
+      return {
         otp: {
           type: Object,
           value: function() { return {}; },
@@ -78,14 +93,33 @@ limitations under the License.
           type: Number,
           observer: 'indexChanged'
         }
-      },
-      onRemove: function(e) {
-        this.fire('remove', this.otp.id);
-      },
-      indexChanged: function() {
-        this._setColor(colors[this.index % colors.length]);
       }
-    });
-  })();
-  </script>
-</dom-module>
+    }
+
+    onRemove(e) {
+      this.fire('remove', this.otp.id);
+    }
+
+    indexChanged() {
+      this._setColor(colors[this.index % colors.length]);
+    }
+
+    copy(e) {
+      let range = document.createRange();
+      range.selectNode(this.$.token);
+      window.getSelection().addRange(range);
+
+      if (document.execCommand('copy')) {
+        if (navigator.vibrate) navigator.vibrate(50);
+        this.fire('show-toast', {
+          text: 'Token copied'
+        });
+      }
+
+      window.getSelection().removeAllRanges();
+    }
+  };
+
+  Polymer(OtpItem.prototype);
+})();
+</script>

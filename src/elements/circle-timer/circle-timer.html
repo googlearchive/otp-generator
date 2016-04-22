@@ -24,50 +24,57 @@ limitations under the License.
     </style>
     <canvas id="canvas"></canvas>
   </template>
-  <script>
-  Polymer({
-    is: 'circle-timer',
-    properties: {
+</dom-module>
+
+<script>
+class CircleTimer {
+  get is() {
+    return 'circle-timer';
+  }
+
+  get properties() {
+    return {
       start: Number,
       end: Number,
       color: {
         type: String,
         value: '#000000'
       }
-    },
+    };
+  }
 
-    _animate: function() {
-      requestAnimationFrame(this._animate.bind(this));
-      // Draw the circle
-      var canvas = this.$.canvas;
-      var context = canvas.getContext('2d');
-      var centerX = canvas.width / 2;
-      var centerY = canvas.height / 2;
-      var thickness = 6 * window.devicePixelRatio;
-      var radius = (Math.min(canvas.width, canvas.height) - thickness) / 2;
+  _animate() {
+    requestAnimationFrame(this._animate.bind(this));
+    // Draw the circle
+    let canvas = this.$.canvas;
+    let context = canvas.getContext('2d');
+    let centerX = canvas.width / 2;
+    let centerY = canvas.height / 2;
+    let thickness = 6 * window.devicePixelRatio;
+    let radius = (Math.min(canvas.width, canvas.height) - thickness) / 2;
 
-      canvas.width = canvas.width;
+    canvas.width = canvas.width;
 
-      var now = Date.now();
-      var proportion = ((now - this.start) / (this.end - this.start));
+    let now = Date.now();
+    let proportion = ((now - this.start) / (this.end - this.start));
 
-      var startAngle = 1.5 * Math.PI;
-      var endAngle = startAngle + (2 * Math.PI * proportion)
+    let startAngle = 1.5 * Math.PI;
+    let endAngle = startAngle + (2 * Math.PI * proportion)
 
-      context.beginPath();
-      context.arc(centerX, centerY, radius, startAngle, endAngle, true);
-      context.strokeStyle = this.color;
-      context.lineWidth = thickness;
-      context.stroke();
-    },
+    context.beginPath();
+    context.arc(centerX, centerY, radius, startAngle, endAngle, true);
+    context.strokeStyle = this.color;
+    context.lineWidth = thickness;
+    context.stroke();
+  }
 
-    ready: function() {
-      var dpr = window.devicePixelRatio;
-      this.$.canvas.width = 40 * dpr;
-      this.$.canvas.height = 40 * dpr;
-      requestAnimationFrame(this._animate.bind(this));
-    }
+  attached() {
+    let dpr = window.devicePixelRatio;
+    this.$.canvas.width = 40 * dpr;
+    this.$.canvas.height = 40 * dpr;
+    requestAnimationFrame(this._animate.bind(this));
+  }
+};
 
-  });
-  </script>
-</dom-module>
+Polymer(CircleTimer.prototype);
+</script>
