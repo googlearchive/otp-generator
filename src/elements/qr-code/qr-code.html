@@ -114,8 +114,9 @@ limitations under the License.
 </dom-module>
 
 <script>
-var requestAnimationFrame = (function() {
-  'use strict';
+'use strict';
+
+const requestAnimationFrame = (function() {
   return window.requestAnimationFrame ||
     window.webkitRequestAnimationFrame ||
     window.mozRequestAnimationFrame ||
@@ -123,6 +124,11 @@ var requestAnimationFrame = (function() {
       window.setTimeout(callback, 1000 / 60);
     };
 })();
+
+const getUserMedia = (navigator.getUserMedia ||
+                      navigator.webkitGetUserMedia ||
+                      navigator.mozGetUserMedia ||
+                      navigator.msGetUserMedia || null);
 
 // A shim for getUserMedia method on the mediaDevices object.
 if (!navigator.mediaDevices.getUserMedia) {
@@ -138,14 +144,14 @@ let CameraManager = function(that) {
   // The canvas is analysed but also displayed to the user.
   // The video is never show
 
-  let self = this;
+  const self = this;
 
-  let cameraRoot = that.$.camera;
-  let cameraVideo = that.$['qr-video'];
-  let cameraCanvas = that.$['qr-canvas'];
-  let cameraOverlay = that.$['qr-overlay'];
+  const cameraRoot = that.$.camera;
+  const cameraVideo = that.$['qr-video'];
+  const cameraCanvas = that.$['qr-canvas'];
+  const cameraOverlay = that.$['qr-overlay'];
 
-  let canvas = cameraCanvas.getContext('2d');
+  const canvas = cameraCanvas.getContext('2d');
 
   // Variables
   let dWidth, dHeight, dx = 0, dy = 0;
@@ -173,7 +179,7 @@ let CameraManager = function(that) {
     );
   };
 
-  let drawOverlay = (width, height) => {
+  const drawOverlay = (width, height) => {
 
     let minLength = Math.min(width, height);
 
@@ -193,7 +199,7 @@ let CameraManager = function(that) {
     }
   };
 
-  let setupVariables = e => {
+  const setupVariables = e => {
     dWidth = cameraCanvas.width = window.innerWidth;
     dHeight = cameraCanvas.height = window.innerHeight;
     dx = 0;
@@ -220,7 +226,7 @@ let CameraManager = function(that) {
     return (cameraVideo.videoWidth > 0);
   };
 
-  let captureFrame = () => {
+  const captureFrame = () => {
     // Work out which part of the video to capture and apply to canvas.
     canvas.drawImage(
       cameraVideo,
@@ -257,12 +263,7 @@ let CameraManager = function(that) {
     //
     // return navigator.mediaDevices.getUserMedia(params)
     // .then(theStream => {
-    let getUserMedia = (navigator.getUserMedia ||
-                        navigator.webkitGetUserMedia ||
-                        navigator.mozGetUserMedia ||
-                        navigator.msGetUserMedia || null);
-
-    gUM = constraints => {
+    const gUM = constraints => {
       return new Promise((resolve, reject) => {
         getUserMedia.call(navigator, constraints, resolve, reject);
       });
@@ -313,7 +314,7 @@ let CameraManager = function(that) {
 
       cameraVideo.src = window.URL.createObjectURL(self.localStream);
       cameraVideo.load();
-      cameraVideo.play();
+      // cameraVideo.play();
     }, error => {
       console.error(error);
       Promise.reject();
@@ -448,6 +449,7 @@ class QrCode {
   _onActiveChanged() {
     if (this.cameraManager) {
       if (this.active) {
+        this.processingFrame = false;
         if (this.cameras.length > 1) {
           var cameraIdx = this._frontCamera ? 0 : 1;
         } else {
@@ -457,6 +459,7 @@ class QrCode {
       } else if (this.cameraManager.localStream !== undefined) {
         this.cameraManager.localStream.getTracks()[0].stop();
         this.cameraManager.localStream = undefined;
+        this.processingFrame = true;
       }
     }
   }

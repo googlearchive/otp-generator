@@ -88,7 +88,8 @@ gulp.task('sw', function() {
 });
 
 gulp.task('sw-toolbox', function() {
-  return gulp.src(PATHS['sw-toolbox'].src).pipe(gulp.dest(PATHS['sw-toolbox'].dest));
+  return gulp.src(PATHS['sw-toolbox'].src)
+    .pipe(gulp.dest(PATHS['sw-toolbox'].dest));
 });
 
 gulp.task('elements', function() {
@@ -103,7 +104,6 @@ gulp.task('third_party', function() {
   return gulp.src(PATHS.third_party.src).pipe(gulp.dest(PATHS.third_party.dest));
 });
 
-/** Build */
 gulp.task('styles', function() {
   return gulp.src(PATHS.styles.src)
     .pipe(sass())
@@ -121,23 +121,23 @@ gulp.task('index', function() {
 });
 
 gulp.task('vulcanize', function() {
- return gulp.src('./src/elements/elements.html')
-   .pipe(vulcanize({
-     inlineScripts: true,
-     inlineCss: true,
-     stripExcludes: false
-   }))
-   .pipe(gulp.dest('./dist/elements'));
+  return gulp.src('./src/elements/elements.html')
+    .pipe(vulcanize({
+      inlineScripts: true,
+      inlineCss: true,
+      stripExcludes: false
+    }))
+    .pipe(gulp.dest('./dist/elements'));
 });
 
 /** Watch */
 gulp.task('watch', function() {
-  gulp.watch(PATHS.elements.src, ['elements']);
-  gulp.watch(PATHS.static.src, ['static']);
+  gulp.watch(PATHS.elements.src,    ['elements']);
+  gulp.watch(PATHS.static.src,      ['static']);
   gulp.watch(PATHS.third_party.src, ['third_party']);
-  gulp.watch(PATHS.bower.src, ['bower']);
-  gulp.watch(PATHS.index.src, ['index']);
-  gulp.watch(PATHS.styles.src, ['styles']);
+  gulp.watch(PATHS.bower.src,       ['bower']);
+  gulp.watch(PATHS.index.src,       ['index']);
+  gulp.watch(PATHS.styles.src,      ['styles']);
   gulp.watch(['src/elements/**/*', '!dist/elements/elements.html', 'bower_components/**/*'], ['vulcanize']);
 });
 

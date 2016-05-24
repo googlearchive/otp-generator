@@ -94,8 +94,8 @@ limitations under the License.
 
     <paper-dialog id="dialog">
       <div class="inputs">
-        <paper-input id="name" label="Name"></paper-input>
-        <paper-input id="secret" type="password" label="Key"></paper-input>
+        <paper-input id="name" label="Account Name"></paper-input>
+        <paper-input id="secret" type="password" label="Secret Key"></paper-input>
         <input type="hidden" id="issuer" hidden />
       </div>
       <div class="buttons">
@@ -163,7 +163,9 @@ class OtpApp {
   }
 
   onQRCodeDetected(e) {
-    let secret = issuer = name = '';
+    let secret = '';
+    let issuer = '';
+    let name = '';
     e.stopPropagation();
     this.closeQRCode(e);
 
