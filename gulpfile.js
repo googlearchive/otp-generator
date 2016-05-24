@@ -37,11 +37,11 @@ var PATHS = {
   },
   sw: {
     src: ['bower_components/platinum-sw/bootstrap/*.js'],
-    dest: 'dist/elements/bootstrap'
+    dest: 'dist/elements/platinum-sw/bootstrap'
   },
   'sw-toolbox': {
     src: ['bower_components/sw-toolbox/*.js'],
-    dest: 'dist/sw-toolbox'
+    dest: 'dist/elements/sw-toolbox'
   },
   static: {
     src: ['src/*.*', '!src/index.html'],
@@ -84,26 +84,30 @@ gulp.task('bower', function() {
 });
 
 gulp.task('sw', function() {
-  return gulp.src(PATHS.sw.src).pipe(gulp.dest(PATHS.sw.dest));
+  return gulp.src(PATHS.sw.src)
+    .pipe(gulp.dest(PATHS.sw.dest));
 });
 
 gulp.task('sw-toolbox', function() {
-  return gulp.src(PATHS['sw-toolbox'].src).pipe(gulp.dest(PATHS['sw-toolbox'].dest));
+  return gulp.src(PATHS['sw-toolbox'].src)
+    .pipe(gulp.dest(PATHS['sw-toolbox'].dest));
 });
 
 gulp.task('elements', function() {
-  return gulp.src(PATHS.elements.src).pipe(gulp.dest(PATHS.elements.dest));
+  return gulp.src(PATHS.elements.src)
+    .pipe(gulp.dest(PATHS.elements.dest));
 });
 
 gulp.task('static', function() {
-  return gulp.src(PATHS.static.src).pipe(gulp.dest(PATHS.static.dest));
+  return gulp.src(PATHS.static.src)
+    .pipe(gulp.dest(PATHS.static.dest));
 });
 
 gulp.task('third_party', function() {
-  return gulp.src(PATHS.third_party.src).pipe(gulp.dest(PATHS.third_party.dest));
+  return gulp.src(PATHS.third_party.src)
+    .pipe(gulp.dest(PATHS.third_party.dest));
 });
 
-/** Build */
 gulp.task('styles', function() {
   return gulp.src(PATHS.styles.src)
     .pipe(sass())
@@ -121,23 +125,23 @@ gulp.task('index', function() {
 });
 
 gulp.task('vulcanize', function() {
- return gulp.src('./src/elements/elements.html')
-   .pipe(vulcanize({
-     inlineScripts: true,
-     inlineCss: true,
-     stripExcludes: false
-   }))
-   .pipe(gulp.dest('./dist/elements'));
+  return gulp.src('./src/elements/elements.html')
+    .pipe(vulcanize({
+      inlineScripts: true,
+      inlineCss: true,
+      stripExcludes: false
+    }))
+    .pipe(gulp.dest('./dist/elements'));
 });
 
 /** Watch */
 gulp.task('watch', function() {
-  gulp.watch(PATHS.elements.src, ['elements']);
-  gulp.watch(PATHS.static.src, ['static']);
+  gulp.watch(PATHS.elements.src,    ['elements']);
+  gulp.watch(PATHS.static.src,      ['static']);
   gulp.watch(PATHS.third_party.src, ['third_party']);
-  gulp.watch(PATHS.bower.src, ['bower']);
-  gulp.watch(PATHS.index.src, ['index']);
-  gulp.watch(PATHS.styles.src, ['styles']);
+  gulp.watch(PATHS.bower.src,       ['bower']);
+  gulp.watch(PATHS.index.src,       ['index']);
+  gulp.watch(PATHS.styles.src,      ['styles']);
   gulp.watch(['src/elements/**/*', '!dist/elements/elements.html', 'bower_components/**/*'], ['vulcanize']);
 });
 
