@@ -37,11 +37,11 @@ var PATHS = {
   },
   sw: {
     src: ['bower_components/platinum-sw/bootstrap/*.js'],
-    dest: 'dist/elements/bootstrap'
+    dest: 'dist/elements/platinum-sw/bootstrap'
   },
   'sw-toolbox': {
     src: ['bower_components/sw-toolbox/*.js'],
-    dest: 'dist/sw-toolbox'
+    dest: 'dist/elements/sw-toolbox'
   },
   static: {
     src: ['src/*.*', '!src/index.html'],
@@ -84,7 +84,8 @@ gulp.task('bower', function() {
 });
 
 gulp.task('sw', function() {
-  return gulp.src(PATHS.sw.src).pipe(gulp.dest(PATHS.sw.dest));
+  return gulp.src(PATHS.sw.src)
+    .pipe(gulp.dest(PATHS.sw.dest));
 });
 
 gulp.task('sw-toolbox', function() {
@@ -93,15 +94,18 @@ gulp.task('sw-toolbox', function() {
 });
 
 gulp.task('elements', function() {
-  return gulp.src(PATHS.elements.src).pipe(gulp.dest(PATHS.elements.dest));
+  return gulp.src(PATHS.elements.src)
+    .pipe(gulp.dest(PATHS.elements.dest));
 });
 
 gulp.task('static', function() {
-  return gulp.src(PATHS.static.src).pipe(gulp.dest(PATHS.static.dest));
+  return gulp.src(PATHS.static.src)
+    .pipe(gulp.dest(PATHS.static.dest));
 });
 
 gulp.task('third_party', function() {
-  return gulp.src(PATHS.third_party.src).pipe(gulp.dest(PATHS.third_party.dest));
+  return gulp.src(PATHS.third_party.src)
+    .pipe(gulp.dest(PATHS.third_party.dest));
 });
 
 gulp.task('styles', function() {
